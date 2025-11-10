@@ -9,7 +9,7 @@ Proyecto de Ciencia de Datos para construir un modelo de clasificación que iden
 
 ## Dataset
 - Nombre: **Bank Marketing**
-- Link: https://www.kaggle.com/code/marwanalimohamed/bank-marketing-classification
+- Link: https://www.kaggle.com/datasets/henriqueyamahata/bank-marketing/data
 - Objetivo: Predecir la suscripción de clientes a la campaña
 
 ## Objetivos
