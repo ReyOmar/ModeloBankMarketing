@@ -1,0 +1,3 @@
+# reemplazar unknowkn por NaN
+#
+#
