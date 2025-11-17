@@ -11,7 +11,7 @@ def load_data():
     return df
 
 def explore_data(df):
-    #Explora el dataset y muestra información básica
+    #Explora el dataset y muestra la información básica
     print("=" * 60)
     print("EXPLORACIÓN INICIAL DEL DATASET")
     print("=" * 60)

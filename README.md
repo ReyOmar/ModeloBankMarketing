@@ -91,10 +91,10 @@ python scripts/train_model.py
 El modelo utiliza **SMOTE+Tomek con optimización de umbral**:
 
 - **SMOTE (Synthetic Minority Oversampling Technique)**: Genera muestras sintéticas de la clase minoritaria para balancear las clases.
-- **Tomek Links**: Elimina muestras ruidosas y mejora la separación entre clases.
+- **Tomek Links**: Elimina muestras ruidosas y mejora la separación entre clases. identifica y elimina pares de puntos de datos de clases diferentes que son vecinos más cercanos entre sí, eliminando instancias "ruidosas" o "ambiguas" cerca del límite de decisión.
 - **Optimización de umbral**: Encuentra el umbral de decisión óptimo que maximiza el F1-score, mejorando el balance entre Precision y Recall.
 
-Este método ha demostrado mejores resultados que el modelo original, especialmente en Precision, que es crítica para campañas de marketing bancario.
+
 
 ## Resultados
 
@@ -117,3 +117,5 @@ Después de ejecutar el pipeline, se encontraran:
   - `confusion_matrix.png`: Matriz de confusión
   - `roc_curve.png`: Curva ROC
   - `feature_importance.png`: Gráfico de importancia de variables
+
+  Cada vez que se ejecuta `main.py` los resultados en `models/` y `reports/` se actualizan al mas reciente.

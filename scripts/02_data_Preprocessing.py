@@ -15,7 +15,6 @@ def load_cleaned_data(filename='bank_cleaned.csv'):
     # ELIMINAR variable 'duration' - Data Leakage
     if 'duration' in df.columns:
         print("\n ELIMINANDO variable 'duration' (data leakage)")
-        print("   Esta variable solo se conoce después del contacto")
         df = df.drop('duration', axis=1)
     
     return df
@@ -58,11 +57,11 @@ def encode_categorical_variables(df):
     categorical_cols = df_encoded.select_dtypes(include=['object']).columns
     categorical_cols = [col for col in categorical_cols if col != 'y']
     
-    # Usar Label Encoding para variables categóricas ordinales
+    # Usar Label Encoding para variables categoricas ordinales
     # y One-Hot Encoding para variables nominales
     label_encoders = {}
     
-    # Variables que pueden ser ordinales (con orden lógico)
+    # Variables que pueden ser ordinales (con orden logico)
     ordinal_vars = ['education', 'month', 'day_of_week', 'poutcome']
     
     # Variables nominales que necesitan one-hot encoding
