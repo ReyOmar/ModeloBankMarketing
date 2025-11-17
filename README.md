@@ -59,7 +59,7 @@ python scripts/main.py
 
 ### Ejecutar scripts individuales
 
-También puedes ejecutar cada script por separado:
+También se pueden ejecutar los script por separado:
 
 1. **Exploración y limpieza:**
 ```bash

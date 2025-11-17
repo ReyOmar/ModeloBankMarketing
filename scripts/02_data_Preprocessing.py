@@ -188,7 +188,7 @@ def save_processed_data(X_train, X_test, y_train, y_test, scaler, label_encoders
     print("✓ Datos procesados guardados en data/processed/")
     print("✓ Preprocesadores guardados en models/")
 
-if __name__ == "_main_":
+if __name__ == "__main__":
     # Cargar datos limpios
     df = load_cleaned_data()
     

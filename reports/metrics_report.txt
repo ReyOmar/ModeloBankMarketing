@@ -1,0 +1,45 @@
+============================================================
+REPORTE DE RESULTADOS - REGRESIÓN LOGÍSTICA
+Método: SMOTE+Tomek + Optimización de Umbral
+============================================================
+
+MÉTRICAS DEL MODELO
+------------------------------------------------------------
+Accuracy:  0.8809
+Precision: 0.4738
+Recall:    0.5172
+F1-Score:  0.4946
+ROC-AUC:   0.7935
+Umbral óptimo: 0.718
+
+MATRIZ DE CONFUSIÓN
+------------------------------------------------------------
+Verdaderos Negativos: 6777
+Falsos Positivos:     533
+Falsos Negativos:     448
+Verdaderos Positivos: 480
+
+TOP 15 VARIABLES MÁS IMPORTANTES
+------------------------------------------------------------
+emp.var.rate                   | Coeficiente:  -1.7478
+euribor3m                      | Coeficiente:   1.1289
+cons.price.idx                 | Coeficiente:   0.6828
+nr.employed                    | Coeficiente:  -0.5304
+contact_telephone              | Coeficiente:  -0.4838
+month                          | Coeficiente:  -0.2356
+campaign                       | Coeficiente:  -0.1829
+marital_single                 | Coeficiente:   0.1595
+marital_married                | Coeficiente:   0.1469
+previously_contacted           | Coeficiente:   0.1283
+pdays                          | Coeficiente:  -0.1266
+poutcome                       | Coeficiente:   0.1077
+previous                       | Coeficiente:  -0.1027
+job_retired                    | Coeficiente:   0.0990
+default_yes                    | Coeficiente:  -0.0881
+
+============================================================
+CONCLUSIONES
+------------------------------------------------------------
+1. El modelo mantiene un balance entre precisión y recall tras balancear clases.
+2. Los coeficientes positivos indican variables que incrementan la probabilidad de suscripción.
+3. Puede utilizarse para priorizar clientes con mayor probabilidad de respuesta.

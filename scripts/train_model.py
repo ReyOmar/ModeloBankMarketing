@@ -320,5 +320,5 @@ def main():
     print("\n✓ Proceso completado. Resultados disponibles en 'reports/'.")
 
 
-if __name__ == "_main_":
+if __name__ == "__main__":
     main()
