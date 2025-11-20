@@ -1,4 +1,4 @@
-#Entrenamiento y evaluación de la Regresión Logística con SMOTE+Tomek.
+#Entrenamiento y evaluación de la Regresión Logística para Bank Marketing.
 
 from __future__ import annotations
 
@@ -11,7 +11,6 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 import seaborn as sns
-from imblearn.combine import SMOTETomek
 from sklearn.linear_model import LogisticRegression
 from sklearn.metrics import (
     accuracy_score,
@@ -39,11 +38,6 @@ for style in ("seaborn-v0_8-darkgrid", "seaborn-darkgrid", "ggplot"):
 sns.set_palette("husl")
 
 
-def _class_distribution(values: pd.Series | np.ndarray) -> Dict[int, int]:
-    unique, counts = np.unique(values, return_counts=True)
-    return {int(label): int(count) for label, count in zip(unique, counts)}
-
-
 def load_processed_data() -> Tuple[pd.DataFrame, pd.DataFrame, pd.Series, pd.Series]:
     #Carga los conjuntos procesados desde disco.
     print("\nCargando datos procesados...")
@@ -55,30 +49,18 @@ def load_processed_data() -> Tuple[pd.DataFrame, pd.DataFrame, pd.Series, pd.Ser
     return X_train, X_test, y_train, y_test
 
 
-def balance_data(
-    X: pd.DataFrame, y: pd.Series, random_state: int = 42
-) -> Tuple[pd.DataFrame, pd.Series]:
-    #Balancea las clases usando SMOTE+Tomek.
-    print("\nAplicando SMOTE+Tomek para balancear clases...")
-    print(f"Distribución original: {_class_distribution(y)}")
-    sampler = SMOTETomek(random_state=random_state)
-    X_balanced, y_balanced = sampler.fit_resample(X, y)
-    print(f"Distribución balanceada: {_class_distribution(y_balanced)}")
-    return X_balanced, y_balanced
-
-
 def train_logistic_regression(
     X_train: pd.DataFrame, y_train: pd.Series, random_state: int = 42
 ) -> LogisticRegression:
-    #Entrena la Regresión Logística sobre los datos balanceados.
-    X_balanced, y_balanced = balance_data(X_train, y_train, random_state)
+    #Entrena la Regresión Logística utilizando ponderación de clases.
     model = LogisticRegression(
         random_state=random_state,
         solver="lbfgs",
         max_iter=1000,
         C=1.0,
+        class_weight="balanced",
     )
-    model.fit(X_balanced, y_balanced)
+    model.fit(X_train, y_train)
     print("✓ Modelo entrenado")
     return model
 
@@ -137,6 +119,11 @@ def evaluate_model(
         "train_f1_at_optimal_threshold": float(train_f1),
     }
 
+    baselines = compute_baseline_metrics(y_test, y_train)
+    lift_metrics = compute_lift_metrics(y_test, y_test_scores)
+    metrics["baselines"] = baselines
+    metrics["lift"] = lift_metrics
+
     print("\n--- MÉTRICAS EN TEST ---")
     for key in ("accuracy", "precision", "recall", "f1", "roc_auc"):
         print(f"{key.capitalize():<10}: {metrics[key]:.4f}")
@@ -144,6 +131,53 @@ def evaluate_model(
     print(cm)
 
     return metrics, y_test_pred, y_test_scores
+
+
+def _summarize_binary_metrics(y_true: pd.Series, y_pred: np.ndarray) -> Dict[str, float]:
+    return {
+        "accuracy": float(accuracy_score(y_true, y_pred)),
+        "precision": float(precision_score(y_true, y_pred, zero_division=0)),
+        "recall": float(recall_score(y_true, y_pred)),
+        "f1": float(f1_score(y_true, y_pred)),
+    }
+
+
+def compute_baseline_metrics(
+    y_test: pd.Series, y_train: pd.Series, random_state: int = 42
+) -> Dict[str, Dict[str, float]]:
+    positive_rate = float(y_train.mean())
+    majority_pred = np.zeros_like(y_test, dtype=int)
+    rng = np.random.default_rng(random_state)
+    random_pred = rng.binomial(1, positive_rate, size=len(y_test))
+
+    return {
+        "majority": _summarize_binary_metrics(y_test, majority_pred),
+        "random": _summarize_binary_metrics(y_test, random_pred),
+        "positive_rate": positive_rate,
+    }
+
+
+def compute_lift_metrics(
+    y_true: pd.Series, scores: np.ndarray, fractions: Tuple[float, ...] = (0.1, 0.2)
+) -> Dict[str, Dict[str, float]]:
+    results: Dict[str, Dict[str, float]] = {}
+    base_rate = float(y_true.mean())
+    order = np.argsort(scores)[::-1]
+    y_ordered = y_true.iloc[order].reset_index(drop=True)
+
+    for frac in fractions:
+        cutoff = max(1, int(len(y_true) * frac))
+        top_rate = float(y_ordered.iloc[:cutoff].mean())
+        lift = top_rate / base_rate if base_rate > 0 else float("nan")
+        key = f"top_{int(frac * 100)}pct"
+        results[key] = {
+            "rate": top_rate,
+            "lift": lift,
+            "cutoff": cutoff,
+        }
+
+    results["base_rate"] = base_rate
+    return results
 
 
 def get_feature_importance(
@@ -246,7 +280,7 @@ def save_text_report(
     lines = [
         "=" * 60,
         "REPORTE DE RESULTADOS - REGRESIÓN LOGÍSTICA",
-        "Método: SMOTE+Tomek + Optimización de Umbral",
+        "Método: class_weight balanceado + Optimización de Umbral",
         "=" * 60,
         "",
         "MÉTRICAS DEL MODELO",
@@ -267,6 +301,8 @@ def save_text_report(
         "",
         "REPORTE POR CLASE (Precision / Recall / F1 / Soporte)",
         "-" * 60,
+        f"{'Clase':<12} | Precision | Recall |    F1 | Soporte",
+        "-" * 60,
     ]
 
     ordered_keys = ["no", "yes"]
@@ -274,17 +310,64 @@ def save_text_report(
         if key in class_report:
             stats = class_report[key]
             lines.append(
-                f"Clase '{key.upper()}': P={stats['precision']:.4f} | "
-                f"R={stats['recall']:.4f} | F1={stats['f1-score']:.4f} | "
-                f"Soporte={int(stats['support'])}"
+                f"{key.upper():<12} | {stats['precision']:>9.4f} | "
+                f"{stats['recall']:>6.4f} | {stats['f1-score']:>6.4f} | "
+                f"{int(stats['support']):>7}"
             )
 
     for label in ("macro avg", "weighted avg"):
         if label in class_report:
             stats = class_report[label]
+            display = label.title()
             lines.append(
-                f"{label.title():<13}: P={stats['precision']:.4f} | "
-                f"R={stats['recall']:.4f} | F1={stats['f1-score']:.4f}"
+                f"{display:<12} | {stats['precision']:>9.4f} | "
+                f"{stats['recall']:>6.4f} | {stats['f1-score']:>6.4f} | "
+                f"{'-':>7}"
+            )
+
+    baselines = metrics.get("baselines", {})
+    if baselines:
+        majority = baselines.get("majority")
+        random_model = baselines.get("random")
+        positive_rate = baselines.get("positive_rate", 0.0)
+        lines.extend(
+            [
+                "",
+                "BASELINES DE REFERENCIA",
+                "-" * 60,
+                f"Prevalencia clase positiva: {positive_rate:.4f}",
+            ]
+        )
+        if majority:
+            lines.append(
+                "Mayoría (siempre 'no'): "
+                f"Acc={majority['accuracy']:.4f} | "
+                f"Rec={majority['recall']:.4f} | "
+                f"F1={majority['f1']:.4f}"
+            )
+        if random_model:
+            lines.append(
+                "Aleatorio (p=prevalencia): "
+                f"Acc={random_model['accuracy']:.4f} | "
+                f"Rec={random_model['recall']:.4f} | "
+                f"F1={random_model['f1']:.4f}"
+            )
+
+    lift_info = metrics.get("lift", {})
+    if lift_info:
+        lines.extend(
+            [
+                "",
+                "LIFT POR SEGMENTOS ORDENADOS POR PROBABILIDAD",
+                "-" * 60,
+                f"Tasa base de suscripción: {lift_info.get('base_rate', 0.0):.4f}",
+            ]
+        )
+        for key in sorted(k for k in lift_info.keys() if k.startswith("top_")):
+            data = lift_info[key]
+            lines.append(
+                f"{key.replace('_', ' ').title():<18} -> tasa={data['rate']:.4f} "
+                f"| lift={data['lift']:.2f} | clientes={data['cutoff']}"
             )
 
     lines.extend(
@@ -352,7 +435,7 @@ def export_artifacts(
 
 def main():
     print("=" * 60)
-    print("ENTRENAMIENTO - REGRESIÓN LOGÍSTICA (SMOTE+Tomek)")
+    print("ENTRENAMIENTO - REGRESIÓN LOGÍSTICA (class_weight)")
     print("=" * 60)
 
     X_train, X_test, y_train, y_test = load_processed_data()

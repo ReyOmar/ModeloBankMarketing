@@ -54,7 +54,7 @@ def encode_categorical_variables(df):
     df_encoded = df.copy()
     
     # Separar variables categóricas (excluyendo la variable objetivo)
-    categorical_cols = df_encoded.select_dtypes(include=['object']).columns
+    categorical_cols = df_encoded.select_dtypes(include=['object', 'category']).columns
     categorical_cols = [col for col in categorical_cols if col != 'y']
     
     # Usar Label Encoding para variables categoricas ordinales
@@ -62,7 +62,7 @@ def encode_categorical_variables(df):
     label_encoders = {}
     
     # Variables que pueden ser ordinales (con orden logico)
-    ordinal_vars = ['education', 'month', 'day_of_week', 'poutcome']
+    ordinal_vars = ['education', 'month', 'day_of_week', 'poutcome', 'pdays_bucket']
     
     # Variables nominales que necesitan one-hot encoding
     nominal_vars = [col for col in categorical_cols if col not in ordinal_vars]
@@ -96,31 +96,70 @@ def feature_engineering(df):
     
     df_fe = df.copy()
     
-    # Crear nuevas features si es necesario
-    # Por ejemplo, agrupar edades en rangos
-    if 'age' in df_fe.columns:
-        df_fe['age_group'] = pd.cut(df_fe['age'], 
-                                    bins=[0, 30, 40, 50, 60, 100], 
-                                    labels=['<30', '30-40', '40-50', '50-60', '60+'])
-        
-        # Convertir age_group a numérico para el modelo
-        df_fe['age_group'] = df_fe['age_group'].cat.codes
+    engineered = []
     
-    # Feature: si ha sido contactado antes (pdays != 999)
+    if 'age' in df_fe.columns:
+        df_fe['age_group'] = pd.cut(
+            df_fe['age'],
+            bins=[0, 30, 40, 50, 60, 100],
+            labels=['<30', '30-40', '40-50', '50-60', '60+']
+        )
+        df_fe['age_group'] = df_fe['age_group'].cat.codes
+        engineered.append('age_group')
+    
     if 'pdays' in df_fe.columns:
         df_fe['previously_contacted'] = (df_fe['pdays'] != 999).astype(int)
+        pdays_clean = df_fe['pdays'].replace(999, np.nan)
+        df_fe['pdays_bucket'] = pd.cut(
+            pdays_clean,
+            bins=[-np.inf, 7, 30, 90, 1000],
+            labels=['<1w', '1-4w', '1-3m', '>=3m']
+        )
+        df_fe['pdays_bucket'] = df_fe['pdays_bucket'].cat.add_categories('no_contact').fillna('no_contact')
+        engineered.extend(['previously_contacted', 'pdays_bucket'])
     
-    # Feature: ratio de contactos previos exitosos
-    if 'previous' in df_fe.columns and 'campaign' in df_fe.columns:
+    if {'previous', 'campaign'}.issubset(df_fe.columns):
         df_fe['success_ratio'] = df_fe['previous'] / (df_fe['campaign'] + 1)
+        df_fe['contact_intensity'] = df_fe['campaign'] + df_fe['previous']
+        df_fe['campaign_effort'] = df_fe['campaign'] / (df_fe['previous'] + 1)
+        engineered.extend(['success_ratio', 'contact_intensity', 'campaign_effort'])
+    
+    if {'housing', 'loan'}.issubset(df_fe.columns):
+        housing_flag = (df_fe['housing'] == 'yes').astype(int)
+        loan_flag = (df_fe['loan'] == 'yes').astype(int)
+        df_fe['num_financial_products'] = housing_flag + loan_flag
+        df_fe['has_any_debt'] = ((df_fe['housing'] == 'yes') | (df_fe['loan'] == 'yes')).astype(int)
+        engineered.extend(['num_financial_products', 'has_any_debt'])
+    
+    if 'default' in df_fe.columns:
+        df_fe['default_flag'] = (df_fe['default'] == 'yes').astype(int)
+        engineered.append('default_flag')
+    
+    if 'month' in df_fe.columns:
+        season_map = {
+            'dec': 'winter', 'jan': 'winter', 'feb': 'winter',
+            'mar': 'spring', 'apr': 'spring', 'may': 'spring',
+            'jun': 'summer', 'jul': 'summer', 'aug': 'summer',
+            'sep': 'autumn', 'oct': 'autumn', 'nov': 'autumn'
+        }
+        df_fe['campaign_season'] = df_fe['month'].map(season_map).fillna('unknown')
+        peak_months = {'mar', 'apr', 'sep', 'dec'}
+        df_fe['peak_season_contact'] = df_fe['month'].isin(peak_months).astype(int)
+        engineered.extend(['campaign_season', 'peak_season_contact'])
+    
+    if 'day_of_week' in df_fe.columns:
+        df_fe['midweek_call'] = df_fe['day_of_week'].isin(['tue', 'wed', 'thu']).astype(int)
+        engineered.append('midweek_call')
+    
+    if {'contact', 'month'}.issubset(df_fe.columns):
+        df_fe['cellular_peak_combo'] = (
+            (df_fe['contact'] == 'cellular') & df_fe['month'].isin(['mar', 'apr', 'sep', 'dec'])
+        ).astype(int)
+        engineered.append('cellular_peak_combo')
     
     print("Features creadas:")
-    if 'age_group' in df_fe.columns:
-        print("- age_group: grupos de edad")
-    if 'previously_contacted' in df_fe.columns:
-        print("- previously_contacted: si fue contactado antes")
-    if 'success_ratio' in df_fe.columns:
-        print("- success_ratio: ratio de éxito en contactos previos")
+    for feat in engineered:
+        print(f"- {feat}")
     
     return df_fe
 

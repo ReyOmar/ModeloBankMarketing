@@ -1,48 +1,62 @@
 ============================================================
 REPORTE DE RESULTADOS - REGRESIÓN LOGÍSTICA
-Método: SMOTE+Tomek + Optimización de Umbral
+Método: class_weight balanceado + Optimización de Umbral
 ============================================================
 
 MÉTRICAS DEL MODELO
 ------------------------------------------------------------
-Accuracy:  0.8809
-Precision: 0.4738
-Recall:    0.5172
-F1-Score:  0.4946
-ROC-AUC:   0.7935
-Umbral óptimo: 0.718
+Accuracy:  0.8747
+Precision: 0.4549
+Recall:    0.5647
+F1-Score:  0.5038
+ROC-AUC:   0.7981
+Umbral óptimo: 0.677
 
 MATRIZ DE CONFUSIÓN
 ------------------------------------------------------------
-Verdaderos Negativos: 6777
-Falsos Positivos:     533
-Falsos Negativos:     448
-Verdaderos Positivos: 480
+Verdaderos Negativos: 6682
+Falsos Positivos:     628
+Falsos Negativos:     404
+Verdaderos Positivos: 524
 
 REPORTE POR CLASE (Precision / Recall / F1 / Soporte)
 ------------------------------------------------------------
-Clase 'NO': P=0.9380 | R=0.9271 | F1=0.9325 | Soporte=7310
-Clase 'YES': P=0.4738 | R=0.5172 | F1=0.4946 | Soporte=928
-Macro Avg    : P=0.7059 | R=0.7222 | F1=0.7135
-Weighted Avg : P=0.8857 | R=0.8809 | F1=0.8832
+Clase        | Precision | Recall |    F1 | Soporte
+------------------------------------------------------------
+NO           |    0.9430 | 0.9141 | 0.9283 |    7310
+YES          |    0.4549 | 0.5647 | 0.5038 |     928
+Macro Avg    |    0.6989 | 0.7394 | 0.7161 |       -
+Weighted Avg |    0.8880 | 0.8747 | 0.8805 |       -
+
+BASELINES DE REFERENCIA
+------------------------------------------------------------
+Prevalencia clase positiva: 0.1127
+Mayoría (siempre 'no'): Acc=0.8874 | Rec=0.0000 | F1=0.0000
+Aleatorio (p=prevalencia): Acc=0.8007 | Rec=0.1013 | F1=0.1027
+
+LIFT POR SEGMENTOS ORDENADOS POR PROBABILIDAD
+------------------------------------------------------------
+Tasa base de suscripción: 0.1126
+Top 10Pct          -> tasa=0.5030 | lift=4.47 | clientes=823
+Top 20Pct          -> tasa=0.3588 | lift=3.19 | clientes=1647
 
 TOP 15 VARIABLES MÁS IMPORTANTES
 ------------------------------------------------------------
-emp.var.rate                   | Coeficiente:  -1.7478
-euribor3m                      | Coeficiente:   1.1289
-cons.price.idx                 | Coeficiente:   0.6828
-nr.employed                    | Coeficiente:  -0.5304
-contact_telephone              | Coeficiente:  -0.4838
-month                          | Coeficiente:  -0.2356
-campaign                       | Coeficiente:  -0.1829
-marital_single                 | Coeficiente:   0.1595
-marital_married                | Coeficiente:   0.1469
-previously_contacted           | Coeficiente:   0.1283
-pdays                          | Coeficiente:  -0.1266
-poutcome                       | Coeficiente:   0.1077
-previous                       | Coeficiente:  -0.1027
-job_retired                    | Coeficiente:   0.0990
-default_yes                    | Coeficiente:  -0.0881
+emp.var.rate                   | Coeficiente:  -1.3205
+euribor3m                      | Coeficiente:   1.3022
+nr.employed                    | Coeficiente:  -0.9108
+campaign_season_summer         | Coeficiente:   0.4272
+peak_season_contact            | Coeficiente:   0.3169
+contact_telephone              | Coeficiente:  -0.3037
+cons.price.idx                 | Coeficiente:   0.2552
+campaign_effort                | Coeficiente:   0.2035
+campaign                       | Coeficiente:  -0.1605
+contact_intensity              | Coeficiente:  -0.1554
+previously_contacted           | Coeficiente:   0.1403
+pdays                          | Coeficiente:  -0.1372
+poutcome                       | Coeficiente:   0.1004
+cellular_peak_combo            | Coeficiente:  -0.0924
+job_retired                    | Coeficiente:   0.0790
 
 JUSTIFICACIÓN DE VARIABLES
 ------------------------------------------------------------
