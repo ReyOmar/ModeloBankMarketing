@@ -15,6 +15,7 @@ from imblearn.combine import SMOTETomek
 from sklearn.linear_model import LogisticRegression
 from sklearn.metrics import (
     accuracy_score,
+    classification_report, #reporte de clases 
     confusion_matrix,
     f1_score,
     precision_recall_curve,
@@ -115,6 +116,14 @@ def evaluate_model(
 
     y_test_pred = (y_test_scores >= optimal_threshold).astype(int)
     cm = confusion_matrix(y_test, y_test_pred)
+    #Agrega el reporte de clases
+    class_report = classification_report(
+        y_test,
+        y_test_pred,
+        output_dict=True,
+        zero_division=0,
+        target_names=["no", "yes"],
+    )
 
     metrics = {
         "accuracy": float(accuracy_score(y_test, y_test_pred)),
@@ -123,6 +132,7 @@ def evaluate_model(
         "f1": float(f1_score(y_test, y_test_pred)),
         "roc_auc": float(roc_auc_score(y_test, y_test_scores)),
         "confusion_matrix": cm.tolist(),
+        "classification_report": class_report, #reporte de clases
         "optimal_threshold": float(optimal_threshold),
         "train_f1_at_optimal_threshold": float(train_f1),
     }
@@ -226,12 +236,13 @@ def plot_feature_importance(
     plt.close(fig)
     print(f"✓ Importancia de variables guardada en {save_path}")
 
-
+#se genera el txt con los resultados
 def save_text_report(
     metrics: Dict[str, float], importance_df: pd.DataFrame, save_path: Path
 ) -> None:
     #Genera un reporte plano con las métricas principales.
     cm = np.array(metrics["confusion_matrix"])
+    class_report = metrics.get("classification_report", {})
     lines = [
         "=" * 60,
         "REPORTE DE RESULTADOS - REGRESIÓN LOGÍSTICA",
@@ -254,26 +265,59 @@ def save_text_report(
         f"Falsos Negativos:     {cm[1, 0]}",
         f"Verdaderos Positivos: {cm[1, 1]}",
         "",
-        "TOP 15 VARIABLES MÁS IMPORTANTES",
+        "REPORTE POR CLASE (Precision / Recall / F1 / Soporte)",
         "-" * 60,
     ]
+
+    ordered_keys = ["no", "yes"]
+    for key in ordered_keys:
+        if key in class_report:
+            stats = class_report[key]
+            lines.append(
+                f"Clase '{key.upper()}': P={stats['precision']:.4f} | "
+                f"R={stats['recall']:.4f} | F1={stats['f1-score']:.4f} | "
+                f"Soporte={int(stats['support'])}"
+            )
+
+    for label in ("macro avg", "weighted avg"):
+        if label in class_report:
+            stats = class_report[label]
+            lines.append(
+                f"{label.title():<13}: P={stats['precision']:.4f} | "
+                f"R={stats['recall']:.4f} | F1={stats['f1-score']:.4f}"
+            )
+
+    lines.extend(
+        [
+            "",
+            "TOP 15 VARIABLES MÁS IMPORTANTES",
+            "-" * 60,
+        ]
+    )
 
     top_rows = importance_df.head(15)
     for row in top_rows.itertuples(index=False):
         lines.append(f"{row.feature:30s} | Coeficiente: {row.coefficient:8.4f}")
 
-    lines.extend(
-        [
-            "",
-            "=" * 60,
-            "CONCLUSIONES",
-            "-" * 60,
-            "1. El modelo mantiene un balance entre precisión y recall tras balancear clases.",
-            "2. Los coeficientes positivos indican variables que incrementan la probabilidad de suscripción.",
-            "3. Puede utilizarse para priorizar clientes con mayor probabilidad de respuesta.",
-            "",
-        ]
-    )
+    justification = [
+        "",
+        "JUSTIFICACIÓN DE VARIABLES",
+        "-" * 60,
+        "- Variables socio-demográficas (edad, ocupación, estado civil, educación) permiten "
+        "distinguir segmentos con diferente propensión a aceptar ofertas.",
+        "- Variables financieras y de contacto (housing, loan, contact, campaign, previous, poutcome) "
+        "capturan el historial comercial y la intensidad del relacionamiento con el banco.",
+        "- Indicadores macroeconómicos (emp.var.rate, cons.price.idx, cons.conf.idx, euribor3m, nr.employed) "
+        "aportan contexto temporal que influye en la respuesta del cliente.",
+        "- Variables derivadas como age_group, success_ratio y previously_contacted resumen patrones "
+        "no lineales sin introducir fuga de información.",
+        "- La variable 'duration' se excluye explícitamente porque solo se conoce después de la llamada "
+        "y generaría data leakage(entre mas dura la llamada la posibilidad de aceptar es mayor); el resto de variables disponibles se retienen al aportar información anticipable.",
+        "",
+        "=" * 60,
+    ]
+
+    lines.extend(justification)
 
     save_path.write_text("\n".join(lines), encoding="utf-8")
     print(f"✓ Reporte guardado en {save_path}")

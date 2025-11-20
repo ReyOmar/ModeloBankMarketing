@@ -35,8 +35,8 @@ Desarrollar un modelo de clasificación para identificar qué clientes tienen ma
 ├── scripts/                    # Scripts del pipeline
 │   ├── 01_data_exploration.py  # Exploración y limpieza
 │   ├── 02_data_preprocessing.py # Preprocesamiento
-│   ├── train_model.py          # Entrenamiento del modelo
-│   └── main.py                 # Script principal
+│   ├── 03_train_model.py       # Entrenamiento del modelo
+│   └── main.py                 # Script principal - Ejecuta los tres scripts  
 └── requirements.txt            # Dependencias
 ```
 
@@ -73,7 +73,7 @@ python scripts/02_data_preprocessing.py
 
 3. **Entrenamiento del modelo:**
 ```bash
-python scripts/train_model.py
+python scripts/03_train_model.py
 ```
 
 ## Metodología

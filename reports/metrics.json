@@ -14,6 +14,33 @@
             480
         ]
     ],
+    "classification_report": {
+        "no": {
+            "precision": 0.9379930795847751,
+            "recall": 0.9270861833105335,
+            "f1-score": 0.9325077399380804,
+            "support": 7310.0
+        },
+        "yes": {
+            "precision": 0.4738400789733465,
+            "recall": 0.5172413793103449,
+            "f1-score": 0.4945904173106646,
+            "support": 928.0
+        },
+        "accuracy": 0.8809176984705025,
+        "macro avg": {
+            "precision": 0.7059165792790608,
+            "recall": 0.7221637813104391,
+            "f1-score": 0.7135490786243726,
+            "support": 8238.0
+        },
+        "weighted avg": {
+            "precision": 0.885706846935175,
+            "recall": 0.8809176984705025,
+            "f1-score": 0.8831769223369342,
+            "support": 8238.0
+        }
+    },
     "optimal_threshold": 0.7175399115457725,
     "train_f1_at_optimal_threshold": 0.4656180943715066
 }

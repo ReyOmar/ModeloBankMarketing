@@ -19,6 +19,13 @@ Falsos Positivos:     533
 Falsos Negativos:     448
 Verdaderos Positivos: 480
 
+REPORTE POR CLASE (Precision / Recall / F1 / Soporte)
+------------------------------------------------------------
+Clase 'NO': P=0.9380 | R=0.9271 | F1=0.9325 | Soporte=7310
+Clase 'YES': P=0.4738 | R=0.5172 | F1=0.4946 | Soporte=928
+Macro Avg    : P=0.7059 | R=0.7222 | F1=0.7135
+Weighted Avg : P=0.8857 | R=0.8809 | F1=0.8832
+
 TOP 15 VARIABLES MÁS IMPORTANTES
 ------------------------------------------------------------
 emp.var.rate                   | Coeficiente:  -1.7478
@@ -37,9 +44,12 @@ previous                       | Coeficiente:  -0.1027
 job_retired                    | Coeficiente:   0.0990
 default_yes                    | Coeficiente:  -0.0881
 
-============================================================
-CONCLUSIONES
+JUSTIFICACIÓN DE VARIABLES
 ------------------------------------------------------------
-1. El modelo mantiene un balance entre precisión y recall tras balancear clases.
-2. Los coeficientes positivos indican variables que incrementan la probabilidad de suscripción.
-3. Puede utilizarse para priorizar clientes con mayor probabilidad de respuesta.
+- Variables socio-demográficas (edad, ocupación, estado civil, educación) permiten distinguir segmentos con diferente propensión a aceptar ofertas.
+- Variables financieras y de contacto (housing, loan, contact, campaign, previous, poutcome) capturan el historial comercial y la intensidad del relacionamiento con el banco.
+- Indicadores macroeconómicos (emp.var.rate, cons.price.idx, cons.conf.idx, euribor3m, nr.employed) aportan contexto temporal que influye en la respuesta del cliente.
+- Variables derivadas como age_group, success_ratio y previously_contacted resumen patrones no lineales sin introducir fuga de información.
+- La variable 'duration' se excluye explícitamente porque solo se conoce después de la llamada y generaría data leakage(entre mas dura la llamada la posibilidad de aceptar es mayor); el resto de variables disponibles se retienen al aportar información anticipable.
+
+============================================================

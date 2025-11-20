@@ -27,7 +27,7 @@ def run_pipeline():
     scripts = [
         ('scripts/01_data_exploration.py', 'Exploración y limpieza'),
         ('scripts/02_data_preprocessing.py', 'Preprocesamiento'),
-        ('scripts/train_model.py', 'Entrenamiento del modelo')
+        ('scripts/03_train_model.py', 'Entrenamiento del modelo')
     ]
     
     for i, (script_path, description) in enumerate(scripts, 1):
