@@ -409,32 +409,6 @@ def save_text_report(metrics: Dict, importance_df: pd.DataFrame, save_path: Path
                 f"{'-':>7}"
             )
 
-    if baselines:
-        majority = baselines.get("majority")
-        random_model = baselines.get("random")
-        lines.extend(
-            [
-                "",
-                "BASELINES DE REFERENCIA",
-                "-" * 60,
-                f"Prevalencia clase positiva: {baselines.get('positive_rate', 0.0):.4f}",
-            ]
-        )
-        if majority:
-            lines.append(
-                "Mayoría (siempre 'no'): "
-                f"Acc={majority['accuracy']:.4f} | "
-                f"Rec={majority['recall']:.4f} | "
-                f"F1={majority['f1']:.4f}"
-            )
-        if random_model:
-            lines.append(
-                "Aleatorio (p=prevalencia): "
-                f"Acc={random_model['accuracy']:.4f} | "
-                f"Rec={random_model['recall']:.4f} | "
-                f"F1={random_model['f1']:.4f}"
-            )
-
     if target_info:
         lines.extend(
             [
@@ -450,22 +424,6 @@ def save_text_report(metrics: Dict, importance_df: pd.DataFrame, save_path: Path
                 f"recall={target_info.get('precision_threshold_recall')}",
             ]
         )
-
-    if lift_info:
-        lines.extend(
-            [
-                "",
-                "LIFT POR SEGMENTOS ORDENADOS POR PROBABILIDAD",
-                "-" * 60,
-                f"Tasa base de suscripción: {lift_info.get('base_rate', 0.0):.4f}",
-            ]
-        )
-        for key in sorted(k for k in lift_info.keys() if k.startswith("top_")):
-            data = lift_info[key]
-            lines.append(
-                f"{key.replace('_', ' ').title():<18} -> tasa={data['rate']:.4f} "
-                f"| lift={data['lift']:.2f} | clientes={data['cutoff']}"
-            )
 
     lines.extend(
         [

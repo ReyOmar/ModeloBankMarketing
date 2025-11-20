@@ -5,7 +5,6 @@ import sys
 import subprocess
 
 def run_script(script_path):
-    #Ejecuta un script de Python
     try:
         result = subprocess.run(
             [sys.executable, script_path],

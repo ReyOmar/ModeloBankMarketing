@@ -85,21 +85,15 @@ python scripts/04_train_random_forest.py
 
 ## Metodología
 
-1. **Limpieza de datos:** normalización de nombres, reemplazo de `unknown` por NA, descarte de `duration` (data leakage) y relleno de faltantes por moda/mediana.
+1. **Limpieza de datos:** reemplazo de `unknown` por NaN y se borra `duration` (data leakage).
 2. **Feature engineering:** se generan grupos de edad, buckets de `pdays`, indicadores de contacto previo, combinaciones de campañas (`success_ratio`, `contact_intensity`, `campaign_effort`), banderas financieras (`num_financial_products`, `has_any_debt`, `default_flag`), estacionalidad (`campaign_season`, `peak_season_contact`, `midweek_call`, `cellular_peak_combo`), etc.
 3. **Preprocesamiento:** Label Encoding para variables ordinales (`education`, `month`, `day_of_week`, `poutcome`, `pdays_bucket`) y One-Hot Encoding para el resto, seguido de estandarización de todas las features numéricas.
 4. **Modelado:** 
-   - Regresión logística con `class_weight='balanced'` para interpretabilidad y análisis de coeficientes.
+   - Regresión logística con `class_weight='balanced'` en lugar de `SMOTE` por ser mas simple y no duplicar datos ademas de interpretabilidad y análisis de coeficientes.
    - Random Forest con `class_weight='balanced_subsample'` para capturar interacciones no lineales y maximizar lift.
-5. **Optimización de umbral:** búsqueda del umbral que maximiza F1 y cálculo adicional de umbrales que cumplen objetivos (p.ej. ≥65 % en precisión o recall).
+5. **Optimización de umbral:** búsqueda del umbral que maximiza F1 y cálculo adicional de umbrales que cumplen objetivos.
 6. **Evaluación completa:** métricas clásicas (Accuracy, Precision, Recall, F1, ROC-AUC), reporte por clase, comparación contra baselines (mayoría/aleatorio) y análisis de lift para los percentiles superiores.
 
-## Método Recomendado
-
-- **Flujo dual:** usar la regresión logística para explicar drivers (coeficientes) y como referencia base, y el Random Forest para la ejecución táctica (mejor ROC-AUC y lift).
-- **Priorización por ranking:** en lugar de un umbral fijo, seleccionar el top 10 – 20 % de clientes según la probabilidad estimada; allí el modelo triplica o cuadruplica la tasa de suscripción.
-- **Ajuste de umbral por objetivo:** si se requiere ≥65 % de precisión o recall, ajustar el umbral siguiendo los valores reportados en `*_metrics_report.txt`, aceptando el compromiso en la otra métrica.
-- **Monitoreo continuo:** revisar los coeficientes/feature importances y las métricas de lift para detectar drift o variaciones estacionales.
 
 ## Resultados
 

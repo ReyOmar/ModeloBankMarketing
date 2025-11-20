@@ -28,18 +28,6 @@ YES          |    0.4549 | 0.5647 | 0.5038 |     928
 Macro Avg    |    0.6989 | 0.7394 | 0.7161 |       -
 Weighted Avg |    0.8880 | 0.8747 | 0.8805 |       -
 
-BASELINES DE REFERENCIA
-------------------------------------------------------------
-Prevalencia clase positiva: 0.1127
-Mayoría (siempre 'no'): Acc=0.8874 | Rec=0.0000 | F1=0.0000
-Aleatorio (p=prevalencia): Acc=0.8007 | Rec=0.1013 | F1=0.1027
-
-LIFT POR SEGMENTOS ORDENADOS POR PROBABILIDAD
-------------------------------------------------------------
-Tasa base de suscripción: 0.1126
-Top 10Pct          -> tasa=0.5030 | lift=4.47 | clientes=823
-Top 20Pct          -> tasa=0.3588 | lift=3.19 | clientes=1647
-
 TOP 15 VARIABLES MÁS IMPORTANTES
 ------------------------------------------------------------
 emp.var.rate                   | Coeficiente:  -1.3205

@@ -184,7 +184,7 @@ def compute_lift_metrics(
 def get_feature_importance(
     model: LogisticRegression, feature_names: pd.Index
 ) -> pd.DataFrame:
-    #Retorna la importancia (coeficientes) de cada feature.
+    #Retorna la importancia  de cada variable.
     coefficients = model.coef_[0]
     importance_df = (
         pd.DataFrame(
@@ -269,7 +269,7 @@ def plot_feature_importance(
     fig.tight_layout()
     fig.savefig(save_path, dpi=300, bbox_inches="tight")
     plt.close(fig)
-    print(f"✓ Importancia de variables guardada en {save_path}")
+    print(f" Importancia de variables guardada en {save_path}")
 
 # Gráficos adicionales
 def plot_precision_recall_curve_chart(
@@ -286,7 +286,7 @@ def plot_precision_recall_curve_chart(
     fig.tight_layout()
     fig.savefig(save_path, dpi=300, bbox_inches="tight")
     plt.close(fig)
-    print(f"✓ Precision-Recall guardada en {save_path}")
+    print(f" Precision-Recall guardada en {save_path}")
 
 
 def plot_cumulative_gain_chart(
@@ -311,7 +311,7 @@ def plot_cumulative_gain_chart(
     fig.tight_layout()
     fig.savefig(save_path, dpi=300, bbox_inches="tight")
     plt.close(fig)
-    print(f"✓ Gain chart guardado en {save_path}")
+    print(f" Gain chart guardado en {save_path}")
 
 
 def plot_score_distribution(
@@ -341,7 +341,7 @@ def plot_score_distribution(
     fig.tight_layout()
     fig.savefig(save_path, dpi=300, bbox_inches="tight")
     plt.close(fig)
-    print(f"✓ Distribución de scores guardada en {save_path}")
+    print(f" Distribución de scores guardada en {save_path}")
 
 
 #se genera el txt con los resultados
@@ -397,51 +397,6 @@ def save_text_report(
                 f"{display:<12} | {stats['precision']:>9.4f} | "
                 f"{stats['recall']:>6.4f} | {stats['f1-score']:>6.4f} | "
                 f"{'-':>7}"
-            )
-
-    baselines = metrics.get("baselines", {})
-    if baselines:
-        majority = baselines.get("majority")
-        random_model = baselines.get("random")
-        positive_rate = baselines.get("positive_rate", 0.0)
-        lines.extend(
-            [
-                "",
-                "BASELINES DE REFERENCIA",
-                "-" * 60,
-                f"Prevalencia clase positiva: {positive_rate:.4f}",
-            ]
-        )
-        if majority:
-            lines.append(
-                "Mayoría (siempre 'no'): "
-                f"Acc={majority['accuracy']:.4f} | "
-                f"Rec={majority['recall']:.4f} | "
-                f"F1={majority['f1']:.4f}"
-            )
-        if random_model:
-            lines.append(
-                "Aleatorio (p=prevalencia): "
-                f"Acc={random_model['accuracy']:.4f} | "
-                f"Rec={random_model['recall']:.4f} | "
-                f"F1={random_model['f1']:.4f}"
-            )
-
-    lift_info = metrics.get("lift", {})
-    if lift_info:
-        lines.extend(
-            [
-                "",
-                "LIFT POR SEGMENTOS ORDENADOS POR PROBABILIDAD",
-                "-" * 60,
-                f"Tasa base de suscripción: {lift_info.get('base_rate', 0.0):.4f}",
-            ]
-        )
-        for key in sorted(k for k in lift_info.keys() if k.startswith("top_")):
-            data = lift_info[key]
-            lines.append(
-                f"{key.replace('_', ' ').title():<18} -> tasa={data['rate']:.4f} "
-                f"| lift={data['lift']:.2f} | clientes={data['cutoff']}"
             )
 
     lines.extend(
