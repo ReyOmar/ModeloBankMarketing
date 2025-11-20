@@ -1,0 +1,67 @@
+============================================================
+REPORTE DE RESULTADOS - RANDOM FOREST
+Método: class_weight balanced_subsample + Optimización de Umbral
+============================================================
+
+MÉTRICAS DEL MODELO
+------------------------------------------------------------
+Accuracy:  0.8968
+Precision: 0.5460
+Recall:    0.4989
+F1-Score:  0.5214
+ROC-AUC:   0.8110
+Umbral óptimo: 0.726
+
+MATRIZ DE CONFUSIÓN
+------------------------------------------------------------
+Verdaderos Negativos: 6925
+Falsos Positivos:     385
+Falsos Negativos:     465
+Verdaderos Positivos: 463
+
+REPORTE POR CLASE (Precision / Recall / F1 / Soporte)
+------------------------------------------------------------
+Clase        | Precision | Recall |    F1 | Soporte
+------------------------------------------------------------
+NO           |    0.9371 | 0.9473 | 0.9422 |    7310
+YES          |    0.5460 | 0.4989 | 0.5214 |     928
+Macro Avg    |    0.7415 | 0.7231 | 0.7318 |       -
+Weighted Avg |    0.8930 | 0.8968 | 0.8948 |       -
+
+BASELINES DE REFERENCIA
+------------------------------------------------------------
+Prevalencia clase positiva: 0.1127
+Mayoría (siempre 'no'): Acc=0.8874 | Rec=0.0000 | F1=0.0000
+Aleatorio (p=prevalencia): Acc=0.8007 | Rec=0.1013 | F1=0.1027
+
+UMBRAL PARA OBJETIVO 65% PRECISIÓN/RECALL
+------------------------------------------------------------
+Target solicitado: 0.65
+Recall >= target: umbral=0.020280798272140226, precision=0.11266237707903363, recall=1.0
+Precision >= target: umbral=0.8239502083984365, precision=0.6509433962264151, recall=0.2974137931034483
+
+LIFT POR SEGMENTOS ORDENADOS POR PROBABILIDAD
+------------------------------------------------------------
+Tasa base de suscripción: 0.1126
+Top 10Pct          -> tasa=0.5480 | lift=4.86 | clientes=823
+Top 20Pct          -> tasa=0.3752 | lift=3.33 | clientes=1647
+
+TOP 15 VARIABLES MÁS IMPORTANTES
+------------------------------------------------------------
+euribor3m                      | Importancia:   0.1645
+nr.employed                    | Importancia:   0.1254
+emp.var.rate                   | Importancia:   0.0923
+age                            | Importancia:   0.0641
+cons.conf.idx                  | Importancia:   0.0485
+cons.price.idx                 | Importancia:   0.0378
+education                      | Importancia:   0.0309
+day_of_week                    | Importancia:   0.0290
+previously_contacted           | Importancia:   0.0284
+campaign_effort                | Importancia:   0.0273
+pdays                          | Importancia:   0.0262
+month                          | Importancia:   0.0257
+contact_intensity              | Importancia:   0.0238
+campaign                       | Importancia:   0.0233
+pdays_bucket                   | Importancia:   0.0216
+
+============================================================

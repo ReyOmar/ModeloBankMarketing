@@ -28,6 +28,7 @@ ROOT_DIR = Path(__file__).resolve().parents[1]
 DATA_DIR = ROOT_DIR / "data" / "processed"
 MODELS_DIR = ROOT_DIR / "models"
 REPORTS_DIR = ROOT_DIR / "reports"
+FIGURES_DIR = REPORTS_DIR / "figures"
 
 for style in ("seaborn-v0_8-darkgrid", "seaborn-darkgrid", "ggplot"):
     try:
@@ -270,6 +271,79 @@ def plot_feature_importance(
     plt.close(fig)
     print(f"✓ Importancia de variables guardada en {save_path}")
 
+# Gráficos adicionales
+def plot_precision_recall_curve_chart(
+    y_test: pd.Series, y_scores: np.ndarray, save_path: Path
+) -> None:
+    precision, recall, _ = precision_recall_curve(y_test, y_scores)
+    fig, ax = plt.subplots(figsize=(7, 5))
+    ax.plot(recall, precision, color="purple", linewidth=2, label="Modelo")
+    ax.set_xlabel("Recall", fontsize=12)
+    ax.set_ylabel("Precision", fontsize=12)
+    ax.set_title("Curva Precision-Recall (Logistic)", fontsize=14, fontweight="bold")
+    ax.grid(alpha=0.3)
+    ax.legend()
+    fig.tight_layout()
+    fig.savefig(save_path, dpi=300, bbox_inches="tight")
+    plt.close(fig)
+    print(f"✓ Precision-Recall guardada en {save_path}")
+
+
+def plot_cumulative_gain_chart(
+    y_test: pd.Series, y_scores: np.ndarray, save_path: Path
+) -> None:
+    order = np.argsort(y_scores)[::-1]
+    y_sorted = y_test.iloc[order].reset_index(drop=True)
+    cumulative_positives = y_sorted.cumsum()
+    total_positives = cumulative_positives.iloc[-1]
+    samples = np.arange(1, len(y_test) + 1)
+    gain = cumulative_positives / total_positives
+    percentage_samples = samples / len(y_test)
+
+    fig, ax = plt.subplots(figsize=(7, 5))
+    ax.plot(percentage_samples, gain, label="Modelo", color="darkgreen", linewidth=2)
+    ax.plot(percentage_samples, percentage_samples, "--", color="gray", label="Aleatorio")
+    ax.set_xlabel("% Clientes contactados", fontsize=12)
+    ax.set_ylabel("% Suscripciones capturadas", fontsize=12)
+    ax.set_title("Curva de Ganancia Acumulada (Logistic)", fontsize=14, fontweight="bold")
+    ax.grid(alpha=0.3)
+    ax.legend()
+    fig.tight_layout()
+    fig.savefig(save_path, dpi=300, bbox_inches="tight")
+    plt.close(fig)
+    print(f"✓ Gain chart guardado en {save_path}")
+
+
+def plot_score_distribution(
+    y_test: pd.Series, y_scores: np.ndarray, save_path: Path
+) -> None:
+    fig, ax = plt.subplots(figsize=(7, 5))
+    sns.histplot(
+        y_scores[y_test == 1],
+        bins=30,
+        color="seagreen",
+        label="Suscribió",
+        ax=ax,
+        alpha=0.6,
+    )
+    sns.histplot(
+        y_scores[y_test == 0],
+        bins=30,
+        color="salmon",
+        label="No suscribió",
+        ax=ax,
+        alpha=0.6,
+    )
+    ax.set_xlabel("Probabilidad estimada", fontsize=12)
+    ax.set_ylabel("Frecuencia", fontsize=12)
+    ax.set_title("Distribución de probabilidades (Logistic)", fontsize=14, fontweight="bold")
+    ax.legend()
+    fig.tight_layout()
+    fig.savefig(save_path, dpi=300, bbox_inches="tight")
+    plt.close(fig)
+    print(f"✓ Distribución de scores guardada en {save_path}")
+
+
 #se genera el txt con los resultados
 def save_text_report(
     metrics: Dict[str, float], importance_df: pd.DataFrame, save_path: Path
@@ -416,6 +490,7 @@ def export_artifacts(
     #Persiste el modelo, métricas y visualizaciones.
     MODELS_DIR.mkdir(parents=True, exist_ok=True)
     REPORTS_DIR.mkdir(parents=True, exist_ok=True)
+    FIGURES_DIR.mkdir(parents=True, exist_ok=True)
 
     with open(MODELS_DIR / "model.pkl", "wb") as f:
         pickle.dump(model, f)
@@ -427,9 +502,22 @@ def export_artifacts(
     print(f"✓ Métricas e importancia guardadas en {REPORTS_DIR}")
 
     cm = np.array(metrics["confusion_matrix"])
-    plot_confusion_matrix(cm, REPORTS_DIR / "confusion_matrix.png")
-    plot_roc_curve_chart(y_test, y_test_scores, metrics["roc_auc"], REPORTS_DIR / "roc_curve.png")
-    plot_feature_importance(importance_df, REPORTS_DIR / "feature_importance.png")
+    plot_confusion_matrix(cm, FIGURES_DIR / "logistic_confusion_matrix.png")
+    plot_roc_curve_chart(
+        y_test, y_test_scores, metrics["roc_auc"], FIGURES_DIR / "logistic_roc_curve.png"
+    )
+    plot_feature_importance(
+        importance_df, FIGURES_DIR / "logistic_feature_importance.png"
+    )
+    plot_precision_recall_curve_chart(
+        y_test, y_test_scores, FIGURES_DIR / "logistic_precision_recall.png"
+    )
+    plot_cumulative_gain_chart(
+        y_test, y_test_scores, FIGURES_DIR / "logistic_cumulative_gain.png"
+    )
+    plot_score_distribution(
+        y_test, y_test_scores, FIGURES_DIR / "logistic_score_distribution.png"
+    )
     save_text_report(metrics, importance_df, REPORTS_DIR / "metrics_report.txt")
 
 

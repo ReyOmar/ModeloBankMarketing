@@ -19,8 +19,8 @@ Desarrollar un modelo de clasificación para identificar qué clientes tienen ma
 
 ### Específicos
 - Limpiar y preparar el dataset para asegurar datos consistentes y variables listas para el modelado.
-- Entrenar un modelo de regresión logística con balanceo de clases usando SMOTE+Tomek.
-- Optimizar el umbral de decisión para maximizar el F1-score.
+- Entrenar modelos supervisados (regresión logística con `class_weight` y Random Forest) para comparar desempeño y explicabilidad.
+- Optimizar el umbral/lift según las restricciones del negocio y documentar baselines de referencia.
 
 ## Estructura del Proyecto
 
@@ -32,11 +32,13 @@ Desarrollar un modelo de clasificación para identificar qué clientes tienen ma
 │   └── processed/              # Datos procesados
 ├── models/                     # Modelos entrenados y preprocesadores
 ├── reports/                    # Resultados, métricas y gráficos
+│   └── figures/                # Matrices, ROC e importancias en PNG
 ├── scripts/                    # Scripts del pipeline
 │   ├── 01_data_exploration.py  # Exploración y limpieza
 │   ├── 02_data_preprocessing.py # Preprocesamiento
-│   ├── 03_train_model.py       # Entrenamiento del modelo
-│   └── main.py                 # Script principal - Ejecuta los tres scripts  
+│   ├── 03_train_model.py       # Entrenamiento del modelo Regresión Logística
+│   ├── 04_train_random_forest.py # Entrenamiento Random Forest
+│   └── main.py                 # Script principal - Ejecuta los scripts en orden  
 └── requirements.txt            # Dependencias
 ```
 
@@ -71,30 +73,33 @@ python scripts/01_data_exploration.py
 python scripts/02_data_preprocessing.py
 ```
 
-3. **Entrenamiento del modelo:**
+3. **Entrenamiento del modelo (Regresión Logística):**
 ```bash
 python scripts/03_train_model.py
 ```
 
+4. **Entrenamiento del modelo (Random Forest):**
+```bash
+python scripts/04_train_random_forest.py
+```
+
 ## Metodología
 
-1. **Limpieza de datos**: Reemplazo de valores "unknown" por NaN y manejo de valores faltantes
-2. **Feature Engineering**: Creación de nuevas variables (grupos de edad, ratios, etc.)
-3. **Preprocesamiento**: Codificación de variables categóricas (Label Encoding y One-Hot Encoding) y estandarización
-4. **Balanceo de clases**: SMOTE + Tomek Links para manejar el desbalance del dataset
-5. **Modelado**: Regresión Logística
-6. **Optimización de umbral**: Búsqueda del umbral óptimo que maximiza el F1-score
-7. **Evaluación**: Métricas de clasificación (Accuracy, Precision, Recall, F1, ROC-AUC)
+1. **Limpieza de datos:** normalización de nombres, reemplazo de `unknown` por NA, descarte de `duration` (data leakage) y relleno de faltantes por moda/mediana.
+2. **Feature engineering:** se generan grupos de edad, buckets de `pdays`, indicadores de contacto previo, combinaciones de campañas (`success_ratio`, `contact_intensity`, `campaign_effort`), banderas financieras (`num_financial_products`, `has_any_debt`, `default_flag`), estacionalidad (`campaign_season`, `peak_season_contact`, `midweek_call`, `cellular_peak_combo`), etc.
+3. **Preprocesamiento:** Label Encoding para variables ordinales (`education`, `month`, `day_of_week`, `poutcome`, `pdays_bucket`) y One-Hot Encoding para el resto, seguido de estandarización de todas las features numéricas.
+4. **Modelado:** 
+   - Regresión logística con `class_weight='balanced'` para interpretabilidad y análisis de coeficientes.
+   - Random Forest con `class_weight='balanced_subsample'` para capturar interacciones no lineales y maximizar lift.
+5. **Optimización de umbral:** búsqueda del umbral que maximiza F1 y cálculo adicional de umbrales que cumplen objetivos (p.ej. ≥65 % en precisión o recall).
+6. **Evaluación completa:** métricas clásicas (Accuracy, Precision, Recall, F1, ROC-AUC), reporte por clase, comparación contra baselines (mayoría/aleatorio) y análisis de lift para los percentiles superiores.
 
 ## Método Recomendado
 
-El modelo utiliza **SMOTE+Tomek con optimización de umbral**:
-
-- **SMOTE (Synthetic Minority Oversampling Technique)**: Genera muestras sintéticas de la clase minoritaria para balancear las clases.
-- **Tomek Links**: Elimina muestras ruidosas y mejora la separación entre clases. identifica y elimina pares de puntos de datos de clases diferentes que son vecinos más cercanos entre sí, eliminando instancias "ruidosas" o "ambiguas" cerca del límite de decisión.
-- **Optimización de umbral**: Encuentra el umbral de decisión óptimo que maximiza el F1-score, mejorando el balance entre Precision y Recall.
-
-
+- **Flujo dual:** usar la regresión logística para explicar drivers (coeficientes) y como referencia base, y el Random Forest para la ejecución táctica (mejor ROC-AUC y lift).
+- **Priorización por ranking:** en lugar de un umbral fijo, seleccionar el top 10 – 20 % de clientes según la probabilidad estimada; allí el modelo triplica o cuadruplica la tasa de suscripción.
+- **Ajuste de umbral por objetivo:** si se requiere ≥65 % de precisión o recall, ajustar el umbral siguiendo los valores reportados en `*_metrics_report.txt`, aceptando el compromiso en la otra métrica.
+- **Monitoreo continuo:** revisar los coeficientes/feature importances y las métricas de lift para detectar drift o variaciones estacionales.
 
 ## Resultados
 
@@ -111,11 +116,8 @@ Después de ejecutar el pipeline, se encontraran:
   - `label_encoders.pkl`: Codificadores de variables categóricas
 
 - **Resultados y reportes** en `reports/`:
-  - `metrics.json`: Métricas del modelo en formato JSON
-  - `metrics_report.txt`: Reporte completo de métricas en texto
-  - `feature_importance.csv`: Importancia de variables
-  - `confusion_matrix.png`: Matriz de confusión
-  - `roc_curve.png`: Curva ROC
-  - `feature_importance.png`: Gráfico de importancia de variables
+  - `metrics.json` / `metrics_report.txt` / `feature_importance.csv`: salidas de la regresión logística.
+  - `random_forest_metrics.json` / `random_forest_metrics_report.txt` / `random_forest_feature_importance.csv`: salidas para Random Forest.
+  - `figures/`: incluye `logistic_*` y `random_forest_*` (matriz, ROC, Precision-Recall, curva de ganancia acumulada, distribución de probabilidades e importancia de variables).
 
   Cada vez que se ejecuta `main.py` los resultados en `models/` y `reports/` se actualizan al mas reciente.
