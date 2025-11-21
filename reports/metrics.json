@@ -41,7 +41,7 @@
             "support": 8238.0
         }
     },
-    "optimal_threshold": 0.6768607763614807,
+    "optimal_threshold": 0.6768607763628527,
     "train_f1_at_optimal_threshold": 0.4807529866055268,
     "baselines": {
         "majority": {
