@@ -7,21 +7,6 @@
 ## Descripción
 Proyecto de Ciencia de Datos para construir un modelo de clasificación que identifique qué clientes tienen mayor probabilidad de suscribirse a la campaña bancaria.
 
-## Dataset
-- Nombre: **Bank Marketing**
-- Link: https://www.kaggle.com/datasets/henriqueyamahata/bank-marketing/data
-
-
-## Objetivos
-
-### General
-Desarrollar un modelo de clasificación para identificar qué clientes tienen mayor probabilidad de suscribirse a la campaña del banco, con el fin de optimizar recursos y mejorar la efectividad del marketing.
-
-### Específicos
-- Limpiar y preparar el dataset para asegurar datos consistentes y variables listas para el modelado.
-- Entrenar modelos supervisados (regresión logística con `class_weight` y Random Forest) para comparar desempeño y explicabilidad.
-- Optimizar el umbral/lift según las restricciones del negocio y documentar baselines de referencia.
-
 ## Estructura del Proyecto
 
 ```
@@ -41,6 +26,65 @@ Desarrollar un modelo de clasificación para identificar qué clientes tienen ma
 │   └── main.py                 # Script principal - Ejecuta los scripts en orden  
 └── requirements.txt            # Dependencias
 ```
+
+## Ubicaciones Importantes
+
+Esta sección explica las ubicaciones clave del proyecto que pueden resultar confusas para nuevos usuarios:
+
+### Directorios Principales
+
+- **`data/raw/`**: Contiene el dataset original sin procesar (`bank-additional-full.csv`). Este archivo **NO se modifica** durante el proceso.
+
+- **`data/processed/`**: Contiene los datos después del preprocesamiento:
+  - `bank_cleaned.csv`: Versión limpia del dataset (valores "unknown" convertidos a NaN)
+  - `X_train.csv`, `X_test.csv`: Features (variables predictoras) separadas en entrenamiento y prueba
+  - `y_train.csv`, `y_test.csv`: Variable objetivo (etiquetas) separadas en entrenamiento y prueba
+
+- **`models/`**: Almacena los modelos entrenados y preprocesadores guardados en formato `.pkl`:
+  - `model.pkl`: Modelo de Regresión Logística entrenado
+  - `random_forest_model.pkl`: Modelo de Random Forest entrenado para comparar con Regresion
+  - `scaler.pkl`: Estandarizador usado para normalizar las variables numéricas
+  - `label_encoders.pkl`: Codificadores para convertir variables categóricas a numéricas
+
+- **`reports/`**: Contiene todos los resultados y análisis:
+  - `metrics_report.txt` / `random_forest_metrics_report.txt`: Reportes en texto plano con métricas y conclusiones
+  - `metrics.json` / `random_forest_metrics.json`: Métricas en formato JSON para análisis programático
+  - `feature_importance.csv` / `random_forest_feature_importance.csv`: Importancia de variables en formato CSV
+  - `smote_vs_classweight_comparison.txt`: Comparación entre técnicas de balanceo (SMOTE vs class_weight)
+  - `figures/`: Carpeta con todas las visualizaciones (gráficos ROC, matrices de confusión, etc.)
+
+- **`scripts/`**: Contiene todos los scripts Python organizados en orden de ejecución:
+  - Los scripts numerados (`01_`, `02_`, etc.) deben ejecutarse en orden
+  - `main.py`: Ejecuta automáticamente todos los scripts en el orden correcto
+
+### Archivos Clave
+
+- **`requirements.txt`**: Lista de todas las dependencias de Python necesarias para ejecutar el proyecto. Instálalas con `pip install -r requirements.txt` antes de comenzar.
+
+- **`README.md`**: Este archivo, que contiene toda la documentación del proyecto.
+
+### Notas Importantes
+
+- Los archivos en `models/` y `reports/` se **sobrescriben** cada vez que ejecutas el pipeline completo. Si quieres conservar resultados previos, haz una copia antes de re-ejecutar.
+
+- El dataset original en `data/raw/` **nunca se modifica** por los scripts. Todos los cambios se guardan en `data/processed/`.
+
+- Para ejecutar el proyecto completo, usa `python scripts/main.py` desde la raíz del proyecto.
+
+## Dataset
+- Nombre: **Bank Marketing**
+- Link: https://www.kaggle.com/datasets/henriqueyamahata/bank-marketing/data
+
+
+## Objetivos
+
+### General
+Desarrollar un modelo de clasificación para identificar qué clientes tienen mayor probabilidad de suscribirse a la campaña del banco, con el fin de optimizar recursos y mejorar la efectividad del marketing.
+
+### Específicos
+- Limpiar y preparar el dataset para asegurar datos consistentes y variables listas para el modelado.
+- Entrenar modelos supervisados (regresión logística con `class_weight` y Random Forest) para comparar desempeño y explicabilidad.
+- Optimizar el umbral/lift según las restricciones del negocio y documentar baselines de referencia.
 
 ## Instalación
 
