@@ -33,7 +33,7 @@ Esta sección explica las ubicaciones clave del proyecto que pueden resultar con
 
 ### Directorios Principales
 
-- **`data/raw/`**: Contiene el dataset original sin procesar (`bank-additional-full.csv`). Este archivo **NO se modifica** durante el proceso.
+- **`data/raw/`**: Contiene el dataset original sin procesar (`bank-additional-full.csv`).
 
 - **`data/processed/`**: Contiene los datos después del preprocesamiento:
   - `bank_cleaned.csv`: Versión limpia del dataset (valores "unknown" convertidos a NaN)
@@ -62,14 +62,6 @@ Esta sección explica las ubicaciones clave del proyecto que pueden resultar con
 - **`requirements.txt`**: Lista de todas las dependencias de Python necesarias para ejecutar el proyecto. Instálalas con `pip install -r requirements.txt` antes de comenzar.
 
 - **`README.md`**: Este archivo, que contiene toda la documentación del proyecto.
-
-### Notas Importantes
-
-- Los archivos en `models/` y `reports/` se **sobrescriben** cada vez que ejecutas el pipeline completo. Si quieres conservar resultados previos, haz una copia antes de re-ejecutar.
-
-- El dataset original en `data/raw/` **nunca se modifica** por los scripts. Todos los cambios se guardan en `data/processed/`.
-
-- Para ejecutar el proyecto completo, usa `python scripts/main.py` desde la raíz del proyecto.
 
 ## Dataset
 - Nombre: **Bank Marketing**
@@ -129,7 +121,7 @@ python scripts/04_train_random_forest.py
 
 ## Metodología
 
-1. **Limpieza de datos:** Se reemplazo de `unknown` por NaN y se borró `duration` (data leakage).
+1. **Limpieza de datos:** Se reemplazo de `unknown` por NaN y se borró `duration` (data leakage) ayuda al modelo.
 2. **Feature engineering:** se generaron grupos de edad, buckets de `pdays`, indicadores de contacto previo, combinaciones de campañas (`success_ratio`, `contact_intensity`, `campaign_effort`), banderas financieras (`num_financial_products`, `has_any_debt`, `default_flag`), estacionalidad (`campaign_season`, `peak_season_contact`, `midweek_call`, `cellular_peak_combo`), etc.
 3. **Preprocesamiento:** Label Encoding para variables ordinales (`education`, `month`, `day_of_week`, `poutcome`, `pdays_bucket`) y One-Hot Encoding para el resto, seguido de estandarización de todas las features numéricas.
 4. **Modelado:** 
