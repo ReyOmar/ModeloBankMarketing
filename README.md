@@ -7,6 +7,8 @@
 ## Descripción
 Proyecto de Ciencia de Datos para construir un modelo de clasificación que identifique qué clientes tienen mayor probabilidad de suscribirse a la campaña bancaria.
 
+Se añadio Random Forest solo para comparacion de resultados...
+
 ## Estructura del Proyecto
 
 ```
